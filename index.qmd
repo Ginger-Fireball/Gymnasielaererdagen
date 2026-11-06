@@ -15,9 +15,16 @@ filters:
 crossref:
   sec-prefix: Delopgave
 ---
+
 ```{=html}
-<a href="page2.html">Go to page 2</a>
+
+<div style="display: flex; justify-content: space-between; margin: 1em 0;">
+  <a href="page2.html" style="background-color: #076cfa; color: #ffc0c0; padding: 8px 16px; border-radius: 6px; text-decoration: none;">Next page →</a>
+</div>
+
 ```
+
+
 
 I dag vil jeg gerne vise, hvad Quarto-Pyodide kan, og hvorfor det kan være en stor fordel at bruge som et pædagogisk redskab i gymnasieundervisningen. Jeg vil derfor introducere nogle matematiske emner, hvor brugen af Quarto-Pyodide skaber en interaktiv og engagerende oplevelse for eleverne.
 ## Numeriske metoder

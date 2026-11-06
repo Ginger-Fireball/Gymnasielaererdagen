@@ -15,8 +15,12 @@ filters:
 crossref:
   sec-prefix: Delopgave
 ---
-```{html}
-<a href="index.html">Back to home</a>
+```{=html}
+
+<div style="display: flex; justify-content: space-between; margin: 1em 0;">
+  <a href="index.html" style="background-color: #076cfa; color: #ffc0c0; padding: 8px 16px; border-radius: 6px; text-decoration: none;">← Previous page</a>
+</div>
+
 ```
 
 Du arbejder for en bank og har fået til opgave at udvikle et program, der kan beregne den månedlige ydelse på et lån. Programmet skal tage højde for lånebeløb, rente og løbetid. Du skal implementere en funktion, der beregner ydelsen baseret på disse parametre. Du ved selvfølgelig godt, at du skal bruge formlen for et annuitetslån, som er givet ved:
