@@ -1,0 +1,234 @@
+---
+title: "Workshop"
+lang: da
+format:
+  html:
+    code-fold: false
+    code-tools: true
+    embed-resources: false
+    include-before-body:
+      header.html
+    include-after-body:
+      footer.html
+filters:
+  - Erasmus-CTM/pyodide-interaktiv
+crossref:
+  sec-prefix: Delopgave
+---
+Du arbejder for en bank og har fået til opgave at udvikle et program, der kan beregne den månedlige ydelse på et lån. Programmet skal tage højde for lånebeløb, rente og løbetid. Du skal implementere en funktion, der beregner ydelsen baseret på disse parametre. Du ved selvfølgelig godt, at du skal bruge formlen for et annuitetslån, som er givet ved:
+$$Lånebeløb = Ydelse \cdot \frac{1 - (1 + r)^{-n}}{r}$$
+
+## Opgave 1: Implementering af ydelsesberegning
+
+Din chef beder dig om at implementere en funktion, der beregner ydelsen baseret på lånebeløb, rente og løbetid. Inden han går ud af døren, minder han dig om at huske at teste funktionen med forskellige inputværdier for at sikre, at den fungerer korrekt. prøv at gøre det i python. husk at $2**k$ er $2^k$ og lav paranteser når du ganger/dividere ellers tager den kun første element. prøv at brug de givede variable når du skriver funktionen så skal du ikke sidde og rette hele funktionen hver gang. 
+
+```{pyodide-python}
+#her importerer vi sympy pakken, som giver os adgang til sympy's funktioner.
+import sympy as sp
+
+# prøv at indsætte nogle værdier og kør koden.
+r =  # rente sats
+P =  # lånebeløb/Hovedstol
+ #månedlig ydelse er Y
+n =  # løbetid i måneder
+# Her kan du selv skrive funktionen, som du har isoleret for Y.
+Y= P*r/(1-(1+r)**(-n))
+#Så kan vi bare printe resultate og se hvad vi får.
+print(Y)
+```
+
+
+# Opgave 2
+
+En kunde kommer nu ind i banken og vil gerne låne 2.000.000 kr. til at købe et hus. Han kan dog maksimalt betale 9.000 kr. om måneden, og han vil gerne have lånet over 30 år. Du skal nu bruge din funktion til at undersøge, hvilken rente kunden reelt beder om med en ydelse på 8.000 kr. om måneden – og se, om det overhovedet er muligt at få et lån på 2.000.000 kr. under disse betingelser. Find den årlige rente.
+
+## Opgave 2.1
+
+Brug formlen for annuitetslån, og prøv at isolere rentesatsen $r$ i formlen. 
+
+::: {.callout-tip collapse="true"}
+## Hint til opgave 2.1
+Er du sikker på, at det overhovedet er muligt at isolere $r$ i denne formel? Hvis ikke, så er det netop svaret!
+:::
+
+## Opgave 2.2
+
+Omskriv formlen for annuitetslån til en funktion, hvor du udnytter, at $f(r) = 0$.
+
+::: {.callout-tip collapse="true"}
+## Hint til opgave 2.2
+Isoler funktionen, så der står 0 på den ene side af lighedstegnet.
+:::
+
+
+## Opgave 2.3
+
+Differentier funktionen med hensyn til $r$ uden at indsætte værdierne på forhånd. Dette kan gøres ved hjælp af sympy-pakken i Python eller i hånden. Du kan bruge sympy.diff() funktionen til at differentiere funktionen med hensyn til $r$. Husk at $r^2$ skrives som $r**2$, og at sætte parenteser ved gange/division, ellers dividerer Python kun med det første element.
+
+::: {.callout-tip collapse="true"}
+## Hint til opgave 2.3
+Hvis du vælger at differentiere funktionen i hånden, så husk at bruge kvotientreglen.
+:::
+
+```{pyodide-python}
+#| output: asis
+# Her importerer vi sympy-pakken, som giver os adgang til symbolske beregninger.
+import sympy as sp
+
+# Så definerer vi symbolerne, så vi kan bruge dem i vores funktion.
+r = sp.Symbol('r') # rentesats
+P = sp.Symbol('P') # lånebeløb / hovedstol
+Y = sp.Symbol('Y') # månedlig ydelse
+n = sp.Symbol('n') # løbetid i måneder
+
+# Her opskriver vi funktionen, som du har isoleret i opgave 2.2.
+f = Y * (1 - (1 + r)**(-n)) / r - P
+f_diff = sp.diff(f, r)
+
+# Når der printes, bruger vi simplify, expand og coeff for at gøre resultatet pænere at læse.
+s = (Y * sp.simplify(sp.expand(f_diff.coeff(Y))))
+print(f"$$ f'(r) = {sp.latex(s)} $$")
+```
+
+## Opgave 2.4
+Implementer Newton-Raphson-metoden i Python for at finde rentesatsen $r$. Da vi i opgave 2.1 fandt ud af, at det ikke er muligt at isolere rentesatsen $r$ analytisk, kan vi med fordel bruge Newton-Raphson-metoden til at finde frem til den.
+
+:::{.callout-note title="Newton-Raphson-metoden"}
+Metoden går ud på at starte med et gæt $x_0$ på en rod af funktionen $f(x)$. Derefter beregner man det næste gæt $x_1$ ved hjælp af formlen:
+$$x_1 = x_0 - \frac{f(x_0)}{f'(x_0)}$$
+Dette gentages iterativt, indtil man når en tilstrækkelig præcision.
+:::
+
+Prøv at indsæt værdierne smat et start gæt i koden og se om du kan finde renten.
+
+```{pyodide-python}
+#Vi impotere igen sympy pakken 
+import sympy as sp
+
+# Vi definerer symboler og værdier
+r = sp.Symbol('r')
+Y = 9000      # Indsæt ydelsen 
+P = 2000000   # Indsæt lånebeløbet / hovedstolen
+n = 360       # Indsæt løbetiden i måneder (30 år * 12 måneder)
+
+# Her opskriver du funktionen så du kan få dens afledede
+f = Y * (1 - (1 + r)**(-n)) / r - P #indsæt funktionen
+f_diff = sp.diff(f, r)
+
+# Her bruger vi lambdify-funktionen til at omdanne de symbolske udtryk til numeriske funktioner
+f_num = sp.lambdify(r, f)
+f_diff_num = sp.lambdify(r, f_diff)
+
+# Vi implementerer Newton-Raphson-metoden. Vi har brug for et startgæt.
+# Husk at vi her kigger på en månedlig rente, så den er eksempelvis ikke 100% (1.0).
+x_0 = 0.02   # Indsæt Startgæt
+
+iterations = range(25)       # Antal iterationer
+Newton_Raphson_results = []  # Her gemmer vi de resultater, vi får undervejs.
+
+# Før vi starter, gemmer vi vores startgæt samt funktionsværdien for gættet.
+Newton_Raphson_results.append((0, x_0, f_num(x_0)))
+
+for i in iterations: #Dette er et forloop det antalet af iterationer du har sat
+    # Beregn det nye gæt ud fra Newton-Raphson formlen
+    x_0 = x_0 - f_num(x_0) / f_diff_num(x_0) 
+    
+    # Gem resultatet i listen. Da range(25) starter fra 0, bruger vi i+1 til iterationsnummeret.
+    Newton_Raphson_results.append((i + 1, x_0, f_num(x_0)))
+
+
+# Print alle iterationer ud
+for i, r_val, f_val in Newton_Raphson_results:
+    print(f"Iteration {i}: x = {r_val:.6f}, f(x) = {f_val}")
+
+```
+Det, vi leder efter, er en positiv $r$-værdi. Funktionen har generelt flere rødder (hvor nogle kan være negative), så hvis du lander forkert, kan du prøve et andet startgæt. Får du intet fornuftigt ud af det, har du sandsynligvis gættet på et tal, der ligger for langt væk.
+
+Husk også at tjekke, at din $f(x)$-værdi er tæt på nul – ellers kan du øge antallet af iterationer ved f.eks. at ændre intervallet. Du kan nu tage den sidste $r$-værdi, gange med 12 og gange med 100 for at få den årlige rente i procent.
+
+```{pyodide-python}
+# Vi vælger vores data her ved at bruge -1 for at tage det sidste element i listen.
+best_r = Newton_Raphson_results[-1][1]
+
+aarlig_rente = best_r * 12 * 100
+print(f'Den årlige rente, kunden beder om, er derfor: {aarlig_rente:.3f}%')
+```
+## Opgave 2.5 
+
+Giver denne rente, som kunden bad om, overhovedet mening, eller skal du bede kunden pænt om at »pille af fister løgsovs, den skal du længere ud på landet med«?
+
+Som en sidste sjov detalje kan du se en mere grafisk visualisering af Newton-Raphson-metoden ved at køre koden nedenfor. Vær dog opmærksom på, at i starten af beregningen kan tallene svinge meget, før de falder til ro.
+
+
+
+```{pyodide-python}
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+frames_data = []
+
+# Vi looper gennem iterationerne af dataen for at lave tangente, dynamiske zoom-grænser, og andet.
+for idx in range(len(Newton_Raphson_results) - 1):
+    
+    # Trækker data ud for det forrige og næste skridt
+    i_prev, r_prev, f_prev = Newton_Raphson_results[idx]
+    i_curr, r_curr, f_curr = Newton_Raphson_results[idx + 1]
+    
+    #Beregner hældningen og generer tangentlinjen
+    df_prev = f_diff_num(r_prev)
+    r_tan = np.linspace(min(r_prev, r_curr) - 0.2, max(r_prev, r_curr) + 0.2, 50)
+    y_tan = df_prev * (r_tan - r_prev) + f_prev
+    
+    # Beregner dynamiske akse-grænser (auto-zoom) for denne specifikke frame
+    x_min = min(r_prev, r_curr) - 0.05
+    x_max = max(r_prev, r_curr) + 0.05
+    
+    # Sørger for at y-grænserne fanger både 0 og f_prev med lidt padding (10%)
+    y_padding = max(abs(f_prev) * 0.1, 1.0)
+    y_min = min(0, f_prev) - y_padding
+    y_max = max(0, f_prev) + y_padding
+    
+    # 4. Gem alt inklusive grænser i frames_data til animation
+    frames_data.append({
+        'iter': i_prev,
+        'point': ([r_prev], [f_prev]),
+        'tangent': (r_tan, y_tan),
+        'drop': ([r_curr, r_curr], [0, f_curr]),
+        'title': f"Iteration {i_prev}: x = {r_prev:.4f} -> {r_curr:.4f}",
+        'xlim': (x_min, x_max),
+        'ylim': (y_min, y_max)
+    })
+
+# Setup for plot-figur og statiske elementer
+fig, ax = plt.subplots(figsize=(8, 6))
+x_plot = np.linspace(-0.5, 1.1, 600)
+ax.plot(x_plot, f_num(x_plot), label='Newton-Raphson metode', color='blue', alpha=0.4)
+ax.axhline(0, color='gray', linestyle='--', linewidth=1)
+
+# Opret tomme plots til animationen
+point_plot, = ax.plot([], [], 'ro', label='Gæt', zorder=5)
+tangent_plot, = ax.plot([], [], 'g--', lw=1.5, label='Tangent')
+drop_plot, = ax.plot([], [], 'k:', lw=1)
+title = ax.set_title("")
+ax.legend(loc='upper right')
+
+# Update-funktion med dynamisk auto-zoom
+def update(frame):
+    data = frames_data[frame]
+    point_plot.set_data(*data['point'])
+    tangent_plot.set_data(*data['tangent'])
+    drop_plot.set_data(*data['drop'])
+    title.set_text(data['title'])
+    
+    # Auto-zoom: Opdater aksernes grænser for hver frame
+    ax.set_xlim(data['xlim'])
+    ax.set_ylim(data['ylim'])
+    
+    return point_plot, tangent_plot, drop_plot, title
+
+# Kør animation (bemærk at blit=False er påkrævet, når man ændrer akser dynamisk)
+ani = animation.FuncAnimation(fig, update, frames=len(frames_data), interval=1500, blit=False)
+plt.show()
+```

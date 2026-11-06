@@ -1,0 +1,179 @@
+---
+title: "Gymnasielærerdagen"
+lang: da
+format:
+  html:
+    code-fold: false
+    code-tools: true
+    embed-resources: false
+    include-before-body:
+      header.html
+    include-after-body:
+      footer.html
+filters:
+  - Erasmus-CTM/pyodide-interaktiv
+crossref:
+  sec-prefix: Delopgave
+---
+I dag vil jeg gerne vise, hvad Quarto-Pyodide kan, og hvorfor det kan være en stor fordel at bruge som et pædagogisk redskab i gymnasieundervisningen. Jeg vil derfor introducere nogle matematiske emner, hvor brugen af Quarto-Pyodide skaber en interaktiv og engagerende oplevelse for eleverne.
+## Numeriske metoder
+
+:::{.callout-note title="Definition af en rod"}
+Givet en funktion $f(x)$ og et element $x$ i funktionens domæne (definitionsmængde), hvor det gælder, at:
+$$f(x) = 0$$
+kaldes $x$ for en *rod* af funktionen.
+:::
+
+
+
+I nogle tilfælde kan man løse dette analytisk, men i mange andre tilfælde er det umuligt eller meget svært. Derfor anvender man numeriske metoder til at finde rødder for funktioner. En af de mest kendte og udbredte metoder er **Newton-Raphson-metoden**, som er en iterativ metode til at tilnærme sig en rod.
+
+Når man bruger Newton-Raphson-metoden, starter man med et kvalificeret gæt på en rod, og derefter bruger man funktionens værdi og dens afledte til at beregne et bedre gæt. Dette gentages, indtil man når en tilstrækkelig høj præcision.
+
+:::{.callout-note title="Newton-Raphson-metoden"}
+Metoden går ud på at starte med et gæt $x_0$ på en rod af funktionen $f(x)$. Derefter beregner man det næste gæt $x_1$ ved hjælp af formlen:
+$$x_1 = x_0 - \frac{f(x_0)}{f'(x_0)}$$
+Dette gentages, indtil man når en tilstrækkelig præcision, hvilket bringer os tæt på den eksakte rod, forudsat at den findes.
+:::
+
+For at illustrere dette kan vi opsætte en simpel funktion. Vi vælger $f(x) = x^2 - 2$, som har en rod ved $x = \sqrt{2}$. Vi kan nu implementere Newton-Raphson-metoden i Python for at finde denne rod.
+
+```{pyodide-python}
+# Importér nødvendige pakker
+import pandas as pd
+import sympy as sp
+
+# Definér x som et symbol, så vi kan regne symbolsk med det
+x = sp.Symbol('x')
+
+# Definér funktionen f(x) = x^2 - 2 og find dens afledte f'(x)
+f = x**2 - 2
+f_diff = sp.diff(f, x)
+
+# Hvis man ønsker det, kan den afledte udskrives ved at fjerne kommentaren herunder:
+# print(f_diff)
+
+# Omdan de symbolske udtryk til numeriske funktioner med lambdify
+f_num = sp.lambdify(x, f)
+f_diff_num = sp.lambdify(x, f_diff)
+
+# Implementer Newton-Raphson-metoden med et startgæt x_0
+x_0 = 1.0  # Startgæt
+iterations = range(10)  # Antal iterationer
+Newton_Raphson_results = []  # Liste til at gemme resultaterne for hver iteration
+
+# Gem startgættet og dets funktionsværdi i resultatlisten
+Newton_Raphson_results.append((0, x_0, f_num(x_0)))
+
+for i in iterations:
+    x_0 = x_0 - f_num(x_0) / f_diff_num(x_0)
+    # Gem resultatet af den aktuelle iteration
+    Newton_Raphson_results.append((i + 1, x_0, f_num(x_0)))
+
+# Udskriv resultaterne
+for i, x_val, f_val in Newton_Raphson_results:
+    print(f"Iteration {i}: x = {x_val}, f(x) = {f_val}")
+```
+
+Som vi kan se ud fra outputtet, konvergerer metoden hurtigt mod roden $\sqrt{2}$ efter blot få iterationer. Dette viser, hvordan Newton-Raphson-metoden effektivt kan bruges til at finde rødder numerisk.Selvom det er interessant at kigge på tallene, giver det en endnu bedre forståelse at visualisere konvergensen grafisk ved at plotte funktionen og tilnærmelserne for hver iteration. Det gør vi i det følgende eksempel ved hjælp af matplotlib.
+```{pyodide-python}
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Opret et plot af funktionen
+x_vals = np.linspace(0, 2, 100)
+y_vals = [f_num(x) for x in x_vals]
+plt.plot(x_vals, y_vals, label='f(x)')
+
+# Plot tilnærmelserne af roden ved hver iteration
+for i, x_val, f_val in Newton_Raphson_results:
+    plt.scatter(x_val, f_val, color='red', s=50)
+
+plt.xlabel('x')
+plt.ylabel('f(x)')
+plt.title('Newton-Raphson-metoden')
+plt.legend()
+plt.show()
+```
+Dette giver et godt indblik, men vi kan tage det et skridt videre og lave en animation af metoden. Det giver eleverne en endnu skarpere visuel forståelse af, hvordan tangenterne bevæger sig ind mod roden skridt for skridt.
+
+```{pyodide-python}
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+# Vi Definere symbolske funktion og afledt
+x = sp.Symbol('x')
+f = x**2 - 2
+f_diff = sp.diff(f, x)
+
+f_num = sp.lambdify(x, f)
+f_diff_num = sp.lambdify(x, f_diff)
+
+#Forudberegner alle iterationsframes
+x_curr = 1.0
+frames_data = []
+
+for i in range(1, 6):
+    # Gem forrige værdier
+    x_prev = x_curr
+    # Beregn næste gæt ved hjælp af Newton-Raphson-formlen
+    x_curr = x_prev - f_num(x_prev) / f_diff_num(x_prev)
+    
+    # Beregn funktionsværdi og afledt i forrige gæt
+    y_prev = f_num(x_prev)
+    df_prev = f_diff_num(x_prev)
+    
+    # Generer x-værdier til tangentlinjen
+    x_tan = np.linspace(min(x_prev, x_curr) - 0.2, max(x_prev, x_curr) + 0.2, 50)
+    # Beregn tilsvarende y-værdier for tangentlinjen
+    y_tan = df_prev * (x_tan - x_prev) + y_prev
+    
+    frames_data.append({
+        # Gem alle relevante data for den aktuelle frame
+        'iter': i,
+        'point': ([x_prev], [y_prev]),
+        'tangent': (x_tan, y_tan),
+        'drop': ([x_curr, x_curr], [0, f_num(x_curr)]),
+        'title': f"Iteration {i}: x = {x_prev:.4f} -> {x_curr:.4f}"
+    })
+
+# 3. Opsæt figur og statiske baggrundselementer
+fig, ax = plt.subplots(figsize=(6, 4))
+x_plot = np.linspace(0.5, 2.2, 200)
+ax.plot(x_plot, f_num(x_plot), label='f(x) = x^2 - 2', color='blue')
+ax.axhline(0, color='gray', linestyle='--', linewidth=1)
+
+# Sæt aksegrænser baseret på data
+x_values = [data['point'][0][0] for data in frames_data]
+y_values = [data['point'][1][0] for data in frames_data]
+ax.set_xlim(min(x_values) - 1, max(x_values) + 1)
+ax.set_ylim(min(y_values) - 1, max(y_values) + 1)
+
+# Opret tomme plots til animationen
+point_plot, = ax.plot([], [], 'ro', label='Gæt', zorder=5)
+tangent_plot, = ax.plot([], [], 'g--', lw=1.5, label='Tangent')
+drop_plot, = ax.plot([], [], 'k:', lw=1)
+title = ax.set_title("")
+ax.legend(loc='upper right')
+
+# laver en Opdateringsfunktion til animationen
+def update(frame):
+    data = frames_data[frame]
+    point_plot.set_data(*data['point'])
+    tangent_plot.set_data(*data['tangent'])
+    drop_plot.set_data(*data['drop'])
+    title.set_text(data['title'])
+    return point_plot, tangent_plot, drop_plot, title
+
+# 5. Køre animation
+ani = animation.FuncAnimation(fig, update, frames=len(frames_data), interval=1000, blit=False)
+plt.show()
+```
+
+Her kan vi tydeligt se, hvordan metoden fungerer i praksis, og hvordan den konvergerer mod roden. Processen starter med et startgæt, hvorefter funktionens værdi og afledte bruges til at finde et bedre gæt, indtil den ønskede præcision er opnået.
+
+Det smarte ved at bruge Quarto og Pyodide er, at eleverne får en langt bedre og mere intuitiv forståelse af matematiske begreber, og selv lege med det. Yderliger fordi det kører i browseren skal de ikke til at downlaode python, vscode, pakkeren, smat forstå hvordan man navigere det. Desuden kan de selv ændre funktionen og startgættet for at undersøge, hvordan metoden opfører sig under forskellige scenarier. Det er en fremragende måde at styrke den eksperimenterende tilgang til matematik i gymnasiet på.
+
+Dette var blot et hurtigt eksempel på et anvendelsesscenarie for Quarto-Pyodide, og hvordan det kan bruges til at undervise i numeriske metoder på en mere interaktiv måde. Jeg håber, det giver et godt indblik i mulighederne med Quarto-Pyodide og teknikkens potentiale til at løfte læringsoplevelsen for eleverne.
