@@ -15,7 +15,9 @@ filters:
 crossref:
   sec-prefix: Delopgave
 ---
+```{html}
 <a href="index.html">Back to home</a>
+```
 
 Du arbejder for en bank og har fået til opgave at udvikle et program, der kan beregne den månedlige ydelse på et lån. Programmet skal tage højde for lånebeløb, rente og løbetid. Du skal implementere en funktion, der beregner ydelsen baseret på disse parametre. Du ved selvfølgelig godt, at du skal bruge formlen for et annuitetslån, som er givet ved:
 $$Lånebeløb = Ydelse \cdot \frac{1 - (1 + r)^{-n}}{r}$$

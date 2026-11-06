@@ -15,8 +15,9 @@ filters:
 crossref:
   sec-prefix: Delopgave
 ---
-
+```{=html}
 <a href="page2.html">Go to page 2</a>
+```
 
 I dag vil jeg gerne vise, hvad Quarto-Pyodide kan, og hvorfor det kan være en stor fordel at bruge som et pædagogisk redskab i gymnasieundervisningen. Jeg vil derfor introducere nogle matematiske emner, hvor brugen af Quarto-Pyodide skaber en interaktiv og engagerende oplevelse for eleverne.
 ## Numeriske metoder
