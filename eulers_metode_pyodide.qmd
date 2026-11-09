@@ -1,0 +1,438 @@
+---
+title: "Gymnasielærerdagen"
+lang: da
+format:
+  html:
+    code-fold: false
+    code-tools: true
+    embed-resources: false
+    include-before-body:
+      header.html
+    include-after-body:
+      footer.html
+filters:
+  - Erasmus-CTM/pyodide-interaktiv
+crossref:
+  sec-prefix: Delopgave
+---
+
+ Ved hjælp af Python direkte i browseren kan eleverne undersøge, hvordan en numerisk løsning bliver beregnet, og hvordan resultatet ændrer sig, når man justerer forskellige parametre.
+
+Vi vil nu kigge på **Eulers metode**, som er en numerisk metode til at finde en tilnærmet løsning på en differentialligning. Undervejs vil vi både gennemgå metoden matematisk og implementere den i Python. 
+
+## Numeriske metoder og differentialligninger
+
+:::{.callout-note title="Definition af en rod"}
+En differentialligning er en ligning, hvori der indgår en (ubekendt) funktion og dens afledede. 
+Den helt generelle form for en n'te ordens lineær differentialligning ser således ud:
+$$a_n\frac{d^ny}{dt^n}+a_{n-1}\frac{d^{n-1}y}{dt^{n-1}}+\cdots+a_1y=u(t)\quad ,\quad a_n\neq 0 $$
+Såfremt $u(t)$ er lig nul, siger man, at differentialligningen er homogen, og i alle andre tilfælde, at den er inhomogen. At løse differentialligningen vil sige at finde en funktion, som tilfredsstiller denne.
+:::
+ 
+Et eksempel på en førsteordens differentialligning er:
+$$
+\frac{dy}{dx}=x+y
+$$
+
+Her beskriver ligningen sammenhængen mellem funktionen $y(x)$ og dens afledte $y'(x)$. Hvis vi desuden får en begyndelsesbetingelse, for eksempel
+
+$$
+y(0)=1,
+$$
+
+har vi et begyndelsesværdiproblem. Begyndelsesbetingelsen fortæller, hvor løsningen starter. Målet er derefter at bestemme, hvordan løsningen udvikler sig for større eller mindre værdier af $x$.
+
+I nogle tilfælde kan differentialligningen løses analytisk, så vi finder et udtryk for $y(x)$. Det er dog ikke altid muligt eller praktisk. Her kan vi i stedet anvende en numerisk metode, som beregner tilnærmede værdier af løsningen.
+
+## Eulers metode
+
+Eulers metode bygger på en simpel idé: Hvis vi kender et punkt på løsningen og hældningen i dette punkt (som vi har fra differentialligning), kan vi bruge hældningen til at estimere det næste punkt.
+
+Vi betragter en differentialligning på formen
+
+$$
+\frac{dy}{dx}=f(x,y), \qquad y(x_0)=y_0.
+$$
+
+Vi starter i punktet $(x_0,y_0)$. Hvis vi tager et lille skridt med længden $h$ i $x$-retningen, kan vi tilnærme ændringen i $y$ ved hjælp af hældningen i startpunktet:
+
+$$
+\Delta y \approx h\cdot f(x_0,y_0).
+$$
+
+Den nye $y$-værdi ($y_1$) må så være vores gamle startværdi plus denne ændring:
+
+$$
+y_1 = y_0 + \Delta y = y_0 + h\cdot f(x_0,y_0).
+$$
+
+Hvis vi generaliserer dette til et vilkårligt trin $n$, får vi den rekursive formel:
+
+$$
+\boxed{y_{n+1}=y_n+h\cdot f(x_n,y_n)}
+$$
+
+Samtidig flytter vi os et skridt frem på $x$-aksen:
+
+$$
+\boxed{x_{n+1}=x_n+h}
+$$
+
+**Her betyder symbolerne:**
+
+- $x_n$ og $y_n$ er det aktuelle punkt.
+- $f(x_n,y_n)$ er hældningen i det aktuelle punkt.
+- $h$ er skridtlængden.
+- $x_{n+1}$ og $y_{n+1}$ er det næste tilnærmede punkt.
+
+:::{.callout-note title="Eulers metode"}
+For at beregne en numerisk løsning starter vi med begyndelsesbetingelsen $(x_0,y_0)$. Derefter gentager vi beregningen
+
+$$
+\begin{aligned}
+y_{n+1} &= y_n+h\cdot f(x_n,y_n),\\
+x_{n+1} &= x_n+h.
+\end{aligned}
+$$
+
+Vi bruger altså hældningen i det aktuelle punkt til at beregne det næste punkt. Processen gentages, indtil vi når den ønskede $x$-værdi.
+:::
+
+Skridtlængden $h$ har betydning for nøjagtigheden. En lille skridtlængde giver normaltvis en bedre tilnærmelse, fordi vi tager mindre skridt langs løsningen. Til gengæld kræver det flere beregninger.
+
+## Eksempel 1: Differentialligningen $y'=x+y$
+
+Vi vil nu bruge Eulers metode på følgende begyndelsesværdiproblem:
+
+$$
+\frac{dy}{dx}=x+y, \qquad y(0)=1.
+$$
+
+Vi ønsker at estimere løsningen frem til $x=1$. Vi vælger først skridtlængden
+
+$$
+h=0.5.
+$$
+
+Det betyder, at vi skal beregne løsningen i punkterne $x=0.5$ og $x=1$.
+
+### Første skridt
+
+Vi starter med begyndelsesbetingelsen:
+
+$$
+x_0=0, \qquad y_0=1.
+$$
+
+Hældningen i startpunktet er
+
+$$
+f(x_0,y_0)=x_0+y_0=0+1=1.
+$$
+
+Vi indsætter i Eulers formel:
+
+$$
+\begin{aligned}
+y_1=y_0+h\cdot f(x_0,y_0)&=1+0.5\cdot 1=1.5,\\
+x_{1} = x_0+h &= 0+0.5=0.5.
+\end{aligned}
+$$
+Det næste punkt bliver derfor
+
+$$
+(x_1,y_1)=(0.5,1.5).
+$$
+
+### Andet skridt
+
+Nu bruger vi det nye punkt til at beregne den næste hældning:
+
+$$
+f(x_1,y_1)=0.5+1.5=2.
+$$
+
+Dermed bliver
+
+$$
+y_2=y_1+h\cdot f(x_1,y_1)
+=1.5+0.5\cdot 2=2.5.
+$$
+
+Vi er nu ved $x_2=1$, og vores tilnærmede løsning er derfor
+
+$$
+\boxed{y(1)\approx 2.5.}
+$$
+
+### Implementering i Python
+
+Vi kan implementere Eulers metode som en generel Python-funktion. Funktionen modtager differentialligningen $f(x,y)$, begyndelsesværdierne, slutværdien og skridtlængden. Den returnerer de beregnede $x$- og $y$-værdier.
+
+```{pyodide-python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+def euler_method(f, x0, y0, x_end, h):
+    if h <= 0:
+        raise ValueError("Skridtlængden h skal være større end 0.")
+    if x_end < x0:
+        raise ValueError("Denne implementering kræver x_end >= x0.")
+    #laver en liste der gemmer væriderne i hvert skirdt
+    x_values = [float(x0)]
+    y_values = [float(y0)]
+    #gemmer værdierne som floats
+    x = float(x0)
+    y = float(y0)
+    #kører indtil x rammer x_end
+    while x < x_end - 1e-12:
+        # Sørg for, at sidste skridt ikke går forbi x_end, hvis din step størrelse ikke går op med det endelige x
+        step = min(h, x_end - x)
+
+        # Beregner hældningen i det aktuelle punkt.
+        slope = f(x, y)
+
+        # Opdater y og x med Eulers metode.
+        y = y + step * slope
+        x = x + step
+        #gemmer værdierne 
+        x_values.append(x)
+        y_values.append(y)
+    #retunere 2 arrays af x og y når funktionen bliver brugt
+    return np.array(x_values), np.array(y_values)
+```
+
+Vi definerer nu differentialligningen og begyndelsesbetingelsen. Derefter bruger vi funktionen med $h=0.5$.
+
+```{pyodide-python}
+# Differentialligningen y' = x + y
+# smart måde at def funktion(lambda),
+# def variable (x,y), dette tegn : betyder vi nu skriver regne udtrykket
+f = lambda x, y: x + y
+
+# Begyndelsesbetingelse og beregningsinterval
+x0 = 0.0
+y0 = 1.0
+x_end = 1.0
+h = 0.5
+
+# Beregn den numeriske løsning, og siger de 2 output værdier skal gemmes
+x_euler, y_euler = euler_method(f, x0, y0, x_end, h)
+l
+# Udskriv resultaterne i en tabel som vi har added lift flair
+print(" n       x_n       y_n")
+print("-----------------------")
+# for loop med 2 elementer enumerate() og zip()
+for n, (x_val, y_val) in enumerate(zip(x_euler, y_euler)):
+    # priner med :2d som betyder 2 brede og d for heltal
+    # 7.3f er bare 7 brede, .3 maks 3 decimaler, f tal med decimaler
+    print(f"{n:2d}    {x_val:7.3f}    {y_val:7.3f}")
+```
+
+Som vi kan se, får vi værdierne $y_0=1$, $y_1=1.5$ og $y_2=2.5$. Det stemmer med vores manuelle beregninger.
+
+### Sammenligning med den eksakte løsning
+
+I dette eksempel kan vi faktisk også finde den eksakte løsning analytisk. Differentialligningen
+
+$$
+y'=x+y
+$$
+
+kan omskrives til
+
+$$
+y'-y=x.
+$$
+
+Det er en førsteordens lineær differentialligning. Ved hjælp af en integrerende faktor kan man finde den generelle løsning
+
+$$
+y(x)=Ce^x-x-1.
+$$
+
+Begyndelsesbetingelsen $y(0)=1$ giver $C=2$, og dermed er den eksakte løsning
+
+$$
+\boxed{y(x)=2e^x-x-1.}
+$$
+
+Vi kan derfor sammenligne Eulers tilnærmede løsning med den eksakte løsning. Det giver os mulighed for at undersøge, hvor stor fejlen er.
+
+```{pyodide-python}
+# Den eksakte løsning 
+exact_solution = lambda x: 2 * np.exp(x) - x - 1
+
+#print med flair
+print(" n       x_n      Euler       Eksakt      Absolut fejl")
+print("------------------------------------------------------")
+#pakker igen tallene ud smart for print af eulers.
+for n, (x_val, y_val) in enumerate(zip(x_euler, y_euler)):
+    #finder løsningen for hvert x_val
+    exact_value = exact_solution(x_val)
+    #finder fejlen mellem eulers og exact
+    error = abs(exact_value - y_val)
+    print(f"{n:2d}    {x_val:7.3f}    {y_val:8.4f}    {exact_value:8.4f}    {error:10.4f}")
+```
+
+Vi kan også visualisere de to løsninger. Den eksakte løsning tegnes som en glat kurve, mens Eulers metode vises som punkter forbundet med rette linjestykker.
+
+```{pyodide-python}
+# plotter x værdier mellem x_0 og x_end
+x_plot = np.linspace(x0, x_end, 200)
+#plooter y på x værdierne
+y_plot = exact_solution(x_plot)
+#laver et canvs til figur størrelsen
+plt.figure(figsize=(8, 5))
+#plotter eksakt løsning
+plt.plot(x_plot, y_plot, label="Eksakt løsning", linewidth=2)
+#plotter eulers metode
+plt.plot(x_euler, y_euler, "o--", label="Eulers metode", linewidth=1.5)
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Eulers metode sammenlignet med den eksakte løsning")
+plt.grid(True)
+plt.legend()
+plt.show()
+```
+
+På grafen kan vi se, at Eulers metode følger den eksakte løsning, men at der opstår en afvigelse. Det skyldes, at vi bruger hældningen i begyndelsen af hvert skridt i stedet for at kende den præcise udvikling gennem hele intervallet.
+
+## Betydningen af skridtlængden
+
+Vi kan undersøge, hvordan skridtlængden påvirker resultatet. Vi beholder den samme differentialligning og begyndelsesbetingelse, men prøver forskellige værdier af $h$.
+
+```{pyodide-python}
+# Undersøg flere forskellige skridtlængder
+step_sizes = [0.5, 0.25, 0.1, 0.05, 0.01]
+#print mad flair
+print("       h       y(1) fra Euler       Absolut fejl")
+print("-------------------------------------------------")
+#forloop med stepsizes
+for step_size in step_sizes:
+    #kører de forskllige stepsizes tager de andre værdier fra tidligere kode blokke
+    x_values, y_values = euler_method(f, x0, y0, x_end, step_size)
+    #henter kun den sidste y værdi
+    approximation = y_values[-1]
+    #henter den exacte
+    exact_value = exact_solution(x_end)
+    #finder fejlen
+    error = abs(exact_value - approximation)
+    print(f"{step_size:8.3f}       {approximation:10.6f}       {error:10.6f}")
+```
+
+Vi kan se, at tilnærmelsen typisk bliver bedre, når skridtlængden bliver mindre. Det skyldes, at metoden foretager flere og mindre skridt og dermed bedre følger kurvens udvikling.
+
+Vi kan også vise de forskellige tilnærmelser på samme graf:
+
+```{pyodide-python}
+plt.figure(figsize=(8, 5))
+plt.plot(x_plot, y_plot, label="Eksakt løsning", linewidth=2)
+#forloop med 3 skridtlængder
+for step_size in [0.5, 0.25, 0.1]:
+    #henter x og y for den givne skridtlængde.
+    x_values, y_values = euler_method(f, x0, y0, x_end, step_size)
+    #plotter den
+    plt.plot(x_values, y_values, "o--", label=f"Euler, h = {step_size}")
+
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Betydningen af skridtlængden")
+plt.grid(True)
+plt.legend()
+plt.show()
+```
+
+## Eksempel 2: En differentialligning uden en simpel eksakt løsning
+
+Eulers metode er særligt nyttig, når det er svært at finde en analytisk løsning. Vi betragter nu differentialligningen
+
+$$
+\frac{dy}{dx}=x+y^2, \qquad y(0)=0.
+$$
+
+Her kan vi ikke umiddelbart isolere $y$ ved almindelig integration. Vi kan dog stadig bruge Eulers metode, fordi vi kan beregne hældningen $f(x,y)=x+y^2$ i hvert punkt.
+
+Vi vælger intervallet $0\leq x\leq 1$ og skridtlængden $h=0.1$.
+
+```{pyodide-python}
+# Definér den nye differentialligning
+f2 = lambda x, y: x + y**2
+
+# Begyndelsesbetingelse og interval
+x0_2 = 0.0
+y0_2 = 0.0
+x_end_2 = 1.0
+h2 = 0.1
+
+# Beregn løsningen
+x2, y2 = euler_method(f2, x0_2, y0_2, x_end_2, h2)
+
+# Udskriv resultaterne
+print(" n       x_n       y_n")
+print("-----------------------")
+for n, (x_val, y_val) in enumerate(zip(x2, y2)):
+    print(f"{n:2d}    {x_val:7.3f}    {y_val:7.4f}")
+```
+
+Vi kan plotte de beregnede punkter og dermed se den tilnærmede udvikling af løsningen.
+
+```{pyodide-python}
+plt.figure(figsize=(8, 5))
+plt.plot(x2, y2, "o--", label="Eulers tilnærmede løsning")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Eulers metode for y' = x + y²")
+plt.grid(True)
+plt.legend()
+plt.show()
+```
+
+Vi kender ikke her en simpel eksakt løsning på samme måde som i det første eksempel. Vi kan derfor bruge Eulers metode til at undersøge løsningens omtrentlige værdier. Vi kan også undersøge, hvordan resultatet ændrer sig, når vi vælger en mindre skridtlængde.
+
+```{pyodide-python}
+print("       h       Tilnærmet værdi af y(1)")
+print("--------------------------------------")
+
+for step_size in [0.2, 0.1, 0.05, 0.01]:
+    x_values, y_values = euler_method(f2, x0_2, y0_2, x_end_2, step_size)
+    print(f"{step_size:8.3f}       {y_values[-1]:10.6f}")
+```
+
+
+## Opgave til eleverne
+
+Vi betragter nu differentialligningen
+
+$$
+\frac{dy}{dx}=2x-y, \qquad y(0)=2.
+$$
+
+Undersøg løsningen på intervallet $0\leq x\leq 2$ ved hjælp af Eulers metode.
+
+1. Vælg først skridtlængden $h=0.5$, og beregn en tilnærmet løsning.
+2. Prøv derefter med $h=0.1$ og sammenlign resultaterne.
+3. Plot de to numeriske løsninger i samme koordinatsystem.
+4. Forklar med egne ord, hvorfor skridtlængden påvirker tilnærmelsen.
+5. Prøv også at ændre begyndelsesværdien $y(0)$ eller selve differentialligningen. Hvad sker der med løsningen?
+```{pyodide-python}
+# Prøv selv at ændre differentialligningen som er den sidste del efter :
+f3 = lambda x, y: 2*x - y
+#Prøv at ændre x0_3 eller y0_3
+x0_3 = 0.0
+y0_3 = 2.0
+x_end_3 = 2.0
+
+plt.figure(figsize=(8, 5))
+#sæt h inde i []
+for step_size in [0.5 , 0.1]:
+    x3, y3 = euler_method(f3, x0_3, y0_3, x_end_3, step_size)
+    plt.plot(x3, y3, "o--", label=f"Euler, h = {step_size}")
+
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Elevopgave: Sammenligning af skridtlængder")
+plt.grid(True)
+plt.legend()
+plt.show()
+```
