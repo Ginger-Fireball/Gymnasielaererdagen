@@ -1033,7 +1033,7 @@ globalThis.qpyodideCustomizedPyodideOptions = {
 globalThis.qpyodideLang = "da";
 
 // Store cell data
-globalThis.qpyodideCellDetails = [{"code":"# Importér nødvendige pakker\nimport pandas as pd\nimport sympy as sp\n\n# Definér x som et symbol, så vi kan regne symbolsk med det\nx = sp.Symbol('x')\n\n# Definér funktionen f(x) = x^2 - 2 og find dens afledte f'(x)\nf = x**2 - 2\nf_diff = sp.diff(f, x)\n\n# Hvis man ønsker det, kan den afledte udskrives ved at fjerne kommentaren herunder:\n# print(f_diff)\n\n# Omdan de symbolske udtryk til numeriske funktioner med lambdify\nf_num = sp.lambdify(x, f)\nf_diff_num = sp.lambdify(x, f_diff)\n\n# Implementer Newton-Raphson-metoden med et startgæt x_0\nx_0 = 1.0  # Startgæt\niterations = range(10)  # Antal iterationer\nNewton_Raphson_results = []  # Liste til at gemme resultaterne for hver iteration\n\n# Gem startgættet og dets funktionsværdi i resultatlisten\nNewton_Raphson_results.append((0, x_0, f_num(x_0)))\n\nfor i in iterations:\n    x_0 = x_0 - f_num(x_0) / f_diff_num(x_0)\n    # Gem resultatet af den aktuelle iteration\n    Newton_Raphson_results.append((i + 1, x_0, f_num(x_0)))\n\n# Udskriv resultaterne\nfor i, x_val, f_val in Newton_Raphson_results:\n    print(f\"Iteration {i}: x = {x_val}, f(x) = {f_val}\")","id":1,"options":{"autorun":"","classes":"","code-fold":"show","comment":"","context":"","dpi":72,"echo":"","eval":"","fig-cap":"","fig-height":5,"fig-width":7,"include":"","label":"","local-storage":"","message":"true","out-height":"","out-width":"700px","output":"true","pdf-fallback":"","read-only":"false","results":"markup","warning":"true"}},{"code":"import matplotlib.pyplot as plt\nimport numpy as np\n\n# Opret et plot af funktionen\nx_vals = np.linspace(0, 2, 100)\ny_vals = [f_num(x) for x in x_vals]\nplt.plot(x_vals, y_vals, label='f(x)')\n\n# Plot tilnærmelserne af roden ved hver iteration\nfor i, x_val, f_val in Newton_Raphson_results:\n    plt.scatter(x_val, f_val, color='red', s=50)\n\nplt.xlabel('x')\nplt.ylabel('f(x)')\nplt.title('Newton-Raphson-metoden')\nplt.legend()\nplt.show()","id":2,"options":{"autorun":"","classes":"","code-fold":"show","comment":"","context":"","dpi":72,"echo":"","eval":"","fig-cap":"","fig-height":5,"fig-width":7,"include":"","label":"","local-storage":"","message":"true","out-height":"","out-width":"700px","output":"true","pdf-fallback":"","read-only":"false","results":"markup","warning":"true"}},{"code":"import sympy as sp\nimport numpy as np\nimport matplotlib.pyplot as plt\nimport matplotlib.animation as animation\n\n# Vi Definere symbolske funktion og afledt\nx = sp.Symbol('x')\nf = x**2 - 2\nf_diff = sp.diff(f, x)\n\nf_num = sp.lambdify(x, f)\nf_diff_num = sp.lambdify(x, f_diff)\n\n#Forudberegner alle iterationsframes\nx_curr = 1.0\nframes_data = []\n\nfor i in range(1, 6):\n    # Gem forrige værdier\n    x_prev = x_curr\n    # Beregn næste gæt ved hjælp af Newton-Raphson-formlen\n    x_curr = x_prev - f_num(x_prev) / f_diff_num(x_prev)\n    \n    # Beregn funktionsværdi og afledt i forrige gæt\n    y_prev = f_num(x_prev)\n    df_prev = f_diff_num(x_prev)\n    \n    # Generer x-værdier til tangentlinjen\n    x_tan = np.linspace(min(x_prev, x_curr) - 0.2, max(x_prev, x_curr) + 0.2, 50)\n    # Beregn tilsvarende y-værdier for tangentlinjen\n    y_tan = df_prev * (x_tan - x_prev) + y_prev\n    \n    frames_data.append({\n        # Gem alle relevante data for den aktuelle frame\n        'iter': i,\n        'point': ([x_prev], [y_prev]),\n        'tangent': (x_tan, y_tan),\n        'drop': ([x_curr, x_curr], [0, f_num(x_curr)]),\n        'title': f\"Iteration {i}: x = {x_prev:.4f} -> {x_curr:.4f}\"\n    })\n\n# 3. Opsæt figur og statiske baggrundselementer\nfig, ax = plt.subplots(figsize=(6, 4))\nx_plot = np.linspace(0.5, 2.2, 200)\nax.plot(x_plot, f_num(x_plot), label='f(x) = x^2 - 2', color='blue')\nax.axhline(0, color='gray', linestyle='--', linewidth=1)\n\n# Sæt aksegrænser baseret på data\nx_values = [data['point'][0][0] for data in frames_data]\ny_values = [data['point'][1][0] for data in frames_data]\nax.set_xlim(min(x_values) - 1, max(x_values) + 1)\nax.set_ylim(min(y_values) - 1, max(y_values) + 1)\n\n# Opret tomme plots til animationen\npoint_plot, = ax.plot([], [], 'ro', label='Gæt', zorder=5)\ntangent_plot, = ax.plot([], [], 'g--', lw=1.5, label='Tangent')\ndrop_plot, = ax.plot([], [], 'k:', lw=1)\ntitle = ax.set_title(\"\")\nax.legend(loc='upper right')\n\n# laver en Opdateringsfunktion til animationen\ndef update(frame):\n    data = frames_data[frame]\n    point_plot.set_data(*data['point'])\n    tangent_plot.set_data(*data['tangent'])\n    drop_plot.set_data(*data['drop'])\n    title.set_text(data['title'])\n    return point_plot, tangent_plot, drop_plot, title\n\n# 5. Køre animation\nani = animation.FuncAnimation(fig, update, frames=len(frames_data), interval=1000, blit=False)\nplt.show()","id":3,"options":{"autorun":"","classes":"","code-fold":"show","comment":"","context":"","dpi":72,"echo":"","eval":"","fig-cap":"","fig-height":5,"fig-width":7,"include":"","label":"","local-storage":"","message":"true","out-height":"","out-width":"700px","output":"true","pdf-fallback":"","read-only":"false","results":"markup","warning":"true"}}];
+globalThis.qpyodideCellDetails = [{"code":"# Importér den nødvendige pakke\nimport sympy as sp\n\n# Definér x som et symbol, så vi kan regne symbolsk med det\nx = sp.Symbol('x')\n\n# Definér funktionen f(x) = x^2 - 2 og find dens afledte f'(x)\nf = x**2 - 2\nf_diff = sp.diff(f, x)\n\n# Hvis man ønsker det, kan den afledte udskrives ved at fjerne kommentaren herunder:\n#print(f_diff)\n\n# Omdan de symbolske udtryk til numeriske funktioner med lambdify\nf_num = sp.lambdify(x, f)\nf_diff_num = sp.lambdify(x, f_diff)\n\n# Implementer Newton-Raphson-metoden med et startgæt x_0\nx_0 = 1.0  # Startgæt\niterations = range(10)  # Antal iterationer\nNewton_Raphson_results = []  # Liste til at gemme resultaterne for hver iteration\n\n# Gem startgættet og dets funktionsværdi i resultatlisten\nNewton_Raphson_results.append((0, x_0, f_num(x_0)))\n\nfor i in iterations:\n    x_0 = x_0 - f_num(x_0) / f_diff_num(x_0)\n    # Gem resultatet af den aktuelle iteration\n    Newton_Raphson_results.append((i + 1, x_0, f_num(x_0)))\n\n# Udskriv resultaterne\nfor i, x_val, f_val in Newton_Raphson_results:\n    print(f\"Iteration {i}: x = {x_val}, f(x) = {f_val}\")","id":1,"options":{"autorun":"","classes":"","code-fold":"show","comment":"","context":"","dpi":72,"echo":"","eval":"","fig-cap":"","fig-height":5,"fig-width":7,"include":"","label":"","local-storage":"","message":"true","out-height":"","out-width":"700px","output":"true","pdf-fallback":"","read-only":"false","results":"markup","warning":"true"}},{"code":"import matplotlib.pyplot as plt\nimport numpy as np\n\n# Opret et plot af funktionen\nx_vals = np.linspace(0, 2, 100)\ny_vals = [f_num(x) for x in x_vals]\nplt.plot(x_vals, y_vals, label='f(x)')\n\n# Plot tilnærmelserne af roden ved hver iteration\nfor i, x_val, f_val in Newton_Raphson_results:\n    plt.scatter(x_val, f_val, color='red', s=50)\n\nplt.xlabel('x')\nplt.ylabel('f(x)')\nplt.title('Newton-Raphson-metoden')\nplt.legend()\nplt.grid()\nplt.show()","id":2,"options":{"autorun":"","classes":"","code-fold":"show","comment":"","context":"","dpi":72,"echo":"","eval":"","fig-cap":"","fig-height":5,"fig-width":7,"include":"","label":"","local-storage":"","message":"true","out-height":"","out-width":"700px","output":"true","pdf-fallback":"","read-only":"false","results":"markup","warning":"true"}},{"code":"import sympy as sp\nimport numpy as np\nimport matplotlib.pyplot as plt\nimport matplotlib.animation as animation\n\n# Vi Definere symbolske funktion og afledt\nx = sp.Symbol('x')\nf = x**2 - 2\nf_diff = sp.diff(f, x)\n\nf_num = sp.lambdify(x, f)\nf_diff_num = sp.lambdify(x, f_diff)\n\n#Forudberegner alle iterationsframes\nx_curr = 1.0\nframes_data = []\n\nfor i in range(1, 6):\n    # Gem forrige værdier\n    x_prev = x_curr\n    # Beregn næste gæt ved hjælp af Newton-Raphson-formlen\n    x_curr = x_prev - f_num(x_prev) / f_diff_num(x_prev)\n    \n    # Beregn funktionsværdi og afledt i forrige gæt\n    y_prev = f_num(x_prev)\n    df_prev = f_diff_num(x_prev)\n    \n    # Generer x-værdier til tangentlinjen\n    x_tan = np.linspace(min(x_prev, x_curr) - 0.2, max(x_prev, x_curr) + 0.2, 50)\n    # Beregn tilsvarende y-værdier for tangentlinjen\n    y_tan = df_prev * (x_tan - x_prev) + y_prev\n    \n    frames_data.append({\n        # Gem alle relevante data for den aktuelle frame\n        'iter': i,\n        'point': ([x_prev], [y_prev]),\n        'tangent': (x_tan, y_tan),\n        'drop': ([x_curr, x_curr], [0, f_num(x_curr)]),\n        'title': f\"Iteration {i}: x = {x_prev:.4f} -> {x_curr:.4f}\"\n    })\n\n# 3. Opsæt figur og statiske baggrundselementer\nfig, ax = plt.subplots(figsize=(6, 4))\nx_plot = np.linspace(0.5, 2.2, 200)\nax.plot(x_plot, f_num(x_plot), label='f(x) = x^2 - 2', color='blue')\nax.axhline(0, color='gray', linestyle='--', linewidth=1)\n\n# Sæt aksegrænser baseret på data\nx_values = [data['point'][0][0] for data in frames_data]\ny_values = [data['point'][1][0] for data in frames_data]\nax.set_xlim(min(x_values) - 1, max(x_values) + 1)\nax.set_ylim(min(y_values) - 1, max(y_values) + 1)\n\n# Opret tomme plots til animationen\npoint_plot, = ax.plot([], [], 'ro', label='Gæt', zorder=5)\ntangent_plot, = ax.plot([], [], 'g--', lw=1.5, label='Tangent')\ndrop_plot, = ax.plot([], [], 'k:', lw=1)\ntitle = ax.set_title(\"\")\nax.legend(loc='upper right')\n\n# laver en Opdateringsfunktion til animationen\ndef update(frame):\n    data = frames_data[frame]\n    point_plot.set_data(*data['point'])\n    tangent_plot.set_data(*data['tangent'])\n    drop_plot.set_data(*data['drop'])\n    title.set_text(data['title'])\n    return point_plot, tangent_plot, drop_plot, title\n\n# 5. Køre animation\nani = animation.FuncAnimation(fig, update, frames=len(frames_data), interval=1000, blit=False)\nplt.show()","id":3,"options":{"autorun":"","classes":"","code-fold":"show","comment":"","context":"","dpi":72,"echo":"","eval":"","fig-cap":"","fig-height":5,"fig-width":7,"include":"","label":"","local-storage":"","message":"true","out-height":"","out-width":"700px","output":"true","pdf-fallback":"","read-only":"false","results":"markup","warning":"true"}}];
 
 // AI feedback feature settings ----
 //
@@ -4994,8 +4994,11 @@ window.Quarto = {
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
 
 <main class="content" id="quarto-document-content">
-<alt="aau, institut="" for="" matematiske="" fag"="" style="display:block; height:3em; margin-left:auto; margin-right:0">
+<div style="text-align: right; margin-bottom: 2em;">
 
+  AAU, Institut for Matematiske Fag
+
+</div>
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.46.0/min/vs/loader.js"></script>
 <script type="module" id="qpyodide-monaco-editor-init">
 
@@ -5042,7 +5045,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Givet en funktion <span class="math inline">\(f(x)\)</span> og et element <span class="math inline">\(x\)</span> i funktionens domæne (definitionsmængde), hvor det gælder, at: <span class="math display">\[f(x) = 0\]</span> kaldes <span class="math inline">\(x\)</span> for en <em>rod</em> af funktionen.</p>
+<p>Givet en funktion <span class="math inline">\(f\)</span> og et element <span class="math inline">\(x\)</span> i funktionens domæne (definitionsmængde), hvor det gælder, at: <span class="math display">\[f(x) = 0\]</span> kaldes <span class="math inline">\(x\)</span> for en <em>rod</em> af funktionen.</p>
 </div>
 </div>
 <p>I nogle tilfælde kan man løse dette analytisk, men i mange andre tilfælde er det umuligt eller meget svært. Derfor anvender man numeriske metoder til at finde rødder for funktioner. En af de mest kendte og udbredte metoder er <strong>Newton-Raphson-metoden</strong>, som er en iterativ metode til at tilnærme sig en rod.</p>
@@ -5063,19 +5066,19 @@ window.Quarto = {
 <p>For at illustrere dette kan vi opsætte en simpel funktion. Vi vælger <span class="math inline">\(f(x) = x^2 - 2\)</span>, som har en rod ved <span class="math inline">\(x = \sqrt{2}\)</span>. Vi kan nu implementere Newton-Raphson-metoden i Python for at finde denne rod.</p>
 <div id="qpyodide-insertion-location-1"></div>
 <noscript>Slå JavaScript til for at kunne bruge de interaktive kodeceller på denne side.</noscript>
-<p>Som vi kan se ud fra outputtet, konvergerer metoden hurtigt mod roden <span class="math inline">\(\sqrt{2}\)</span> efter blot få iterationer. Dette viser, hvordan Newton-Raphson-metoden effektivt kan bruges til at finde rødder numerisk.Selvom det er interessant at kigge på tallene, giver det en endnu bedre forståelse at visualisere konvergensen grafisk ved at plotte funktionen og tilnærmelserne for hver iteration. Det gør vi i det følgende eksempel ved hjælp af matplotlib.</p>
+<p>Som vi kan se ud fra outputtet, konvergerer metoden hurtigt mod roden <span class="math inline">\(\sqrt{2}\)</span> efter blot få iterationer. Dette viser, hvordan Newton-Raphson-metoden effektivt kan bruges til at finde rødder numerisk. Selvom det er interessant at kigge på tallene, giver det en endnu bedre forståelse at visualisere konvergensen grafisk ved at plotte funktionen og tilnærmelserne for hver iteration. Det gør vi i det følgende eksempel ved hjælp af matplotlib.</p>
 <div id="qpyodide-insertion-location-2"></div>
 <noscript>Slå JavaScript til for at kunne bruge de interaktive kodeceller på denne side.</noscript>
 <p>Dette giver et godt indblik, men vi kan tage det et skridt videre og lave en animation af metoden. Det giver eleverne en endnu skarpere visuel forståelse af, hvordan tangenterne bevæger sig ind mod roden skridt for skridt.</p>
 <div id="qpyodide-insertion-location-3"></div>
 <noscript>Slå JavaScript til for at kunne bruge de interaktive kodeceller på denne side.</noscript>
 <p>Her kan vi tydeligt se, hvordan metoden fungerer i praksis, og hvordan den konvergerer mod roden. Processen starter med et startgæt, hvorefter funktionens værdi og afledte bruges til at finde et bedre gæt, indtil den ønskede præcision er opnået.</p>
-<p>Det smarte ved at bruge Quarto og Pyodide er, at eleverne får en langt bedre og mere intuitiv forståelse af matematiske begreber, og selv lege med det. Yderliger fordi det kører i browseren skal de ikke til at downlaode python, vscode, pakkeren, smat forstå hvordan man navigere det. Desuden kan de selv ændre funktionen og startgættet for at undersøge, hvordan metoden opfører sig under forskellige scenarier. Det er en fremragende måde at styrke den eksperimenterende tilgang til matematik i gymnasiet på.</p>
+<p>Det smarte ved at bruge Quarto og Pyodide er, at eleverne får en langt bedre og mere intuitiv forståelse af matematiske begreber, og selv lege med det. Yderliger fordi det kører i browseren skal de ikke til at downloade python, vscode, pakkerne, samt forstå hvordan man navigere det. Desuden kan de selv ændre funktionen og startgættet for at undersøge, hvordan metoden opfører sig under forskellige scenarier. Det er en fremragende måde at styrke den eksperimenterende tilgang til matematik i gymnasiet på.</p>
 <p>Dette var blot et hurtigt eksempel på et anvendelsesscenarie for Quarto-Pyodide, og hvordan det kan bruges til at undervise i numeriske metoder på en mere interaktiv måde. Jeg håber, det giver et godt indblik i mulighederne med Quarto-Pyodide og teknikkens potentiale til at løfte læringsoplevelsen for eleverne.</p>
 <!-- -->
 
 
-</alt="aau,></main>
+</main>
 <!-- /main column -->
 <div style="display:flex; justify-content:space-between; align-items:center">
 
@@ -5568,7 +5571,7 @@ window.Quarto = {
 <span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="fu">## Numeriske metoder</span></span>
 <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>:::{.callout-note title="Definition af en rod"}</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>Givet en funktion $f(x)$ og et element $x$ i funktionens domæne (definitionsmængde), hvor det gælder, at:</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>Givet en funktion $f$ og et element $x$ i funktionens domæne (definitionsmængde), hvor det gælder, at:</span>
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>$$f(x) = 0$$</span>
 <span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>kaldes $x$ for en *rod* af funktionen.</span>
 <span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>:::</span>
@@ -5588,60 +5591,60 @@ window.Quarto = {
 <span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>For at illustrere dette kan vi opsætte en simpel funktion. Vi vælger $f(x) = x^2 - 2$, som har en rod ved $x = \sqrt{2}$. Vi kan nu implementere Newton-Raphson-metoden i Python for at finde denne rod.</span>
 <span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="in">```{pyodide-python}</span></span>
-<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="co"># Importér nødvendige pakker</span></span>
-<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sympy <span class="im">as</span> sp</span>
-<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Definér x som et symbol, så vi kan regne symbolsk med det</span></span>
-<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> sp.Symbol(<span class="st">'x'</span>)</span>
-<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="co"># Definér funktionen f(x) = x^2 - 2 og find dens afledte f'(x)</span></span>
-<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>f <span class="op">=</span> x<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">2</span></span>
-<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>f_diff <span class="op">=</span> sp.diff(f, x)</span>
-<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="co"># Hvis man ønsker det, kan den afledte udskrives ved at fjerne kommentaren herunder:</span></span>
-<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="co"># print(f_diff)</span></span>
-<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="co"># Omdan de symbolske udtryk til numeriske funktioner med lambdify</span></span>
-<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>f_num <span class="op">=</span> sp.lambdify(x, f)</span>
-<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>f_diff_num <span class="op">=</span> sp.lambdify(x, f_diff)</span>
-<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="co"># Implementer Newton-Raphson-metoden med et startgæt x_0</span></span>
-<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a>x_0 <span class="op">=</span> <span class="fl">1.0</span>  <span class="co"># Startgæt</span></span>
-<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>iterations <span class="op">=</span> <span class="bu">range</span>(<span class="dv">10</span>)  <span class="co"># Antal iterationer</span></span>
-<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>Newton_Raphson_results <span class="op">=</span> []  <span class="co"># Liste til at gemme resultaterne for hver iteration</span></span>
-<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a><span class="co"># Gem startgættet og dets funktionsværdi i resultatlisten</span></span>
-<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>Newton_Raphson_results.append((<span class="dv">0</span>, x_0, f_num(x_0)))</span>
-<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> iterations:</span>
-<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>    x_0 <span class="op">=</span> x_0 <span class="op">-</span> f_num(x_0) <span class="op">/</span> f_diff_num(x_0)</span>
-<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Gem resultatet af den aktuelle iteration</span></span>
-<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a>    Newton_Raphson_results.append((i <span class="op">+</span> <span class="dv">1</span>, x_0, f_num(x_0)))</span>
-<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a><span class="co"># Udskriv resultaterne</span></span>
-<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, x_val, f_val <span class="kw">in</span> Newton_Raphson_results:</span>
-<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Iteration </span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">: x = </span><span class="sc">{</span>x_val<span class="sc">}</span><span class="ss">, f(x) = </span><span class="sc">{</span>f_val<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>Som vi kan se ud fra outputtet, konvergerer metoden hurtigt mod roden $\sqrt{2}$ efter blot få iterationer. Dette viser, hvordan Newton-Raphson-metoden effektivt kan bruges til at finde rødder numerisk.Selvom det er interessant at kigge på tallene, giver det en endnu bedre forståelse at visualisere konvergensen grafisk ved at plotte funktionen og tilnærmelserne for hver iteration. Det gør vi i det følgende eksempel ved hjælp af matplotlib.</span>
-<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a><span class="in">```{pyodide-python}</span></span>
-<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a><span class="co"># Opret et plot af funktionen</span></span>
-<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a>x_vals <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">100</span>)</span>
-<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a>y_vals <span class="op">=</span> [f_num(x) <span class="cf">for</span> x <span class="kw">in</span> x_vals]</span>
-<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a>plt.plot(x_vals, y_vals, label<span class="op">=</span><span class="st">'f(x)'</span>)</span>
-<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot tilnærmelserne af roden ved hver iteration</span></span>
-<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, x_val, f_val <span class="kw">in</span> Newton_Raphson_results:</span>
-<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a>    plt.scatter(x_val, f_val, color<span class="op">=</span><span class="st">'red'</span>, s<span class="op">=</span><span class="dv">50</span>)</span>
-<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'x'</span>)</span>
-<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'f(x)'</span>)</span>
-<span id="cb1-105"><a href="#cb1-105" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Newton-Raphson-metoden'</span>)</span>
-<span id="cb1-106"><a href="#cb1-106" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="co"># Importér den nødvendige pakke</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sympy <span class="im">as</span> sp</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="co"># Definér x som et symbol, så vi kan regne symbolsk med det</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> sp.Symbol(<span class="st">'x'</span>)</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="co"># Definér funktionen f(x) = x^2 - 2 og find dens afledte f'(x)</span></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>f <span class="op">=</span> x<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="dv">2</span></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>f_diff <span class="op">=</span> sp.diff(f, x)</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a><span class="co"># Hvis man ønsker det, kan den afledte udskrives ved at fjerne kommentaren herunder:</span></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="co">#print(f_diff)</span></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="co"># Omdan de symbolske udtryk til numeriske funktioner med lambdify</span></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>f_num <span class="op">=</span> sp.lambdify(x, f)</span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>f_diff_num <span class="op">=</span> sp.lambdify(x, f_diff)</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="co"># Implementer Newton-Raphson-metoden med et startgæt x_0</span></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>x_0 <span class="op">=</span> <span class="fl">1.0</span>  <span class="co"># Startgæt</span></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a>iterations <span class="op">=</span> <span class="bu">range</span>(<span class="dv">10</span>)  <span class="co"># Antal iterationer</span></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>Newton_Raphson_results <span class="op">=</span> []  <span class="co"># Liste til at gemme resultaterne for hver iteration</span></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a><span class="co"># Gem startgættet og dets funktionsværdi i resultatlisten</span></span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>Newton_Raphson_results.append((<span class="dv">0</span>, x_0, f_num(x_0)))</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> iterations:</span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>    x_0 <span class="op">=</span> x_0 <span class="op">-</span> f_num(x_0) <span class="op">/</span> f_diff_num(x_0)</span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Gem resultatet af den aktuelle iteration</span></span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a>    Newton_Raphson_results.append((i <span class="op">+</span> <span class="dv">1</span>, x_0, f_num(x_0)))</span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a><span class="co"># Udskriv resultaterne</span></span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, x_val, f_val <span class="kw">in</span> Newton_Raphson_results:</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Iteration </span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">: x = </span><span class="sc">{</span>x_val<span class="sc">}</span><span class="ss">, f(x) = </span><span class="sc">{</span>f_val<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a>Som vi kan se ud fra outputtet, konvergerer metoden hurtigt mod roden $\sqrt{2}$ efter blot få iterationer. Dette viser, hvordan Newton-Raphson-metoden effektivt kan bruges til at finde rødder numerisk. Selvom det er interessant at kigge på tallene, giver det en endnu bedre forståelse at visualisere konvergensen grafisk ved at plotte funktionen og tilnærmelserne for hver iteration. Det gør vi i det følgende eksempel ved hjælp af matplotlib.</span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a><span class="in">```{pyodide-python}</span></span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a><span class="co"># Opret et plot af funktionen</span></span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a>x_vals <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">100</span>)</span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a>y_vals <span class="op">=</span> [f_num(x) <span class="cf">for</span> x <span class="kw">in</span> x_vals]</span>
+<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a>plt.plot(x_vals, y_vals, label<span class="op">=</span><span class="st">'f(x)'</span>)</span>
+<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot tilnærmelserne af roden ved hver iteration</span></span>
+<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, x_val, f_val <span class="kw">in</span> Newton_Raphson_results:</span>
+<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a>    plt.scatter(x_val, f_val, color<span class="op">=</span><span class="st">'red'</span>, s<span class="op">=</span><span class="dv">50</span>)</span>
+<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'x'</span>)</span>
+<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'f(x)'</span>)</span>
+<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Newton-Raphson-metoden'</span>)</span>
+<span id="cb1-105"><a href="#cb1-105" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb1-106"><a href="#cb1-106" aria-hidden="true" tabindex="-1"></a>plt.grid()</span>
 <span id="cb1-107"><a href="#cb1-107" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
 <span id="cb1-108"><a href="#cb1-108" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb1-109"><a href="#cb1-109" aria-hidden="true" tabindex="-1"></a>Dette giver et godt indblik, men vi kan tage det et skridt videre og lave en animation af metoden. Det giver eleverne en endnu skarpere visuel forståelse af, hvordan tangenterne bevæger sig ind mod roden skridt for skridt.</span>
@@ -5723,7 +5726,7 @@ window.Quarto = {
 <span id="cb1-185"><a href="#cb1-185" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-186"><a href="#cb1-186" aria-hidden="true" tabindex="-1"></a>Her kan vi tydeligt se, hvordan metoden fungerer i praksis, og hvordan den konvergerer mod roden. Processen starter med et startgæt, hvorefter funktionens værdi og afledte bruges til at finde et bedre gæt, indtil den ønskede præcision er opnået.</span>
 <span id="cb1-187"><a href="#cb1-187" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-188"><a href="#cb1-188" aria-hidden="true" tabindex="-1"></a>Det smarte ved at bruge Quarto og Pyodide er, at eleverne får en langt bedre og mere intuitiv forståelse af matematiske begreber, og selv lege med det. Yderliger fordi det kører i browseren skal de ikke til at downlaode python, vscode, pakkeren, smat forstå hvordan man navigere det. Desuden kan de selv ændre funktionen og startgættet for at undersøge, hvordan metoden opfører sig under forskellige scenarier. Det er en fremragende måde at styrke den eksperimenterende tilgang til matematik i gymnasiet på.</span>
+<span id="cb1-188"><a href="#cb1-188" aria-hidden="true" tabindex="-1"></a>Det smarte ved at bruge Quarto og Pyodide er, at eleverne får en langt bedre og mere intuitiv forståelse af matematiske begreber, og selv lege med det. Yderliger fordi det kører i browseren skal de ikke til at downloade python, vscode, pakkerne, samt forstå hvordan man navigere det. Desuden kan de selv ændre funktionen og startgættet for at undersøge, hvordan metoden opfører sig under forskellige scenarier. Det er en fremragende måde at styrke den eksperimenterende tilgang til matematik i gymnasiet på.</span>
 <span id="cb1-189"><a href="#cb1-189" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-190"><a href="#cb1-190" aria-hidden="true" tabindex="-1"></a>Dette var blot et hurtigt eksempel på et anvendelsesscenarie for Quarto-Pyodide, og hvordan det kan bruges til at undervise i numeriske metoder på en mere interaktiv måde. Jeg håber, det giver et godt indblik i mulighederne med Quarto-Pyodide og teknikkens potentiale til at løfte læringsoplevelsen for eleverne.</span></code></pre></div><button title="Kopier til udklipsholder" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>

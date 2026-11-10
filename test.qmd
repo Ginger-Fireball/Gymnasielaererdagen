@@ -1,0 +1,40 @@
+---
+title: "Gymnasielærerdagen"
+lang: da
+format:
+  html:
+    code-fold: false
+    code-tools: true
+    embed-resources: 
+    include-before-body:
+      header.html
+    include-after-body:
+      footer.html
+filters:
+  - pyodide
+crossref:
+  sec-prefix: Delopgave
+---
+
+
+```{pyodide-python}
+import matplotlib
+print("Matplotlib backend:", matplotlib.get_backend())
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+fig, ax = plt.subplots()
+
+x, y = np.meshgrid(
+    np.linspace(0, 2*np.pi, 20),
+    np.linspace(0, 2*np.pi, 20)
+)
+
+z = np.sin(x - y/4)*np.sin(y)
+
+cs = ax.contourf(x, y, z)
+fig.colorbar(cs, ax=ax)
+
+plt.show()
+```

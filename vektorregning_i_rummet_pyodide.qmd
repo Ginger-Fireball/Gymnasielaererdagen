@@ -1,0 +1,228 @@
+---
+title: "3D Vektorer"
+lang: da
+format:
+  html:
+    code-fold: false
+    code-tools: true
+    embed-resources: false
+    include-before-body:
+      header.html
+    include-after-body:
+      footer.html
+filters:
+  - Erasmus-CTM/pyodide-interaktiv
+crossref:
+  sec-prefix: Delopgave
+---
+
+<div style="display: flex; justify-content: space-between; margin: 1em 0;">
+  <a href="eulers_metode_pyodide.html" style="background-color: #076cfa; color: #ffc0c0; padding: 8px 16px; border-radius: 6px; text-decoration: none;">← Previous page</a>
+</div>
+
+I dette korte eksempel vil jeg vise, hvordan Quarto-Pyodide kan bruges til at arbejde med **vektorregning i rummet**. Ved hjælp af Python og Matplotlib kan vi både udføre beregninger med vektorer og visualisere dem i et tredimensionelt koordinatsystem.
+
+## Vektorer i rummet
+
+En vektor i rummet kan skrives på formen
+
+$$
+\vec{u} =
+\begin{pmatrix}
+u_1\\u_2\\u_3
+\end{pmatrix}.
+$$
+
+Vi vælger så to vektorer:
+
+$$
+\vec{u} =
+\begin{pmatrix}
+2\\1\\2
+\end{pmatrix},
+\qquad
+\vec{v} =
+\begin{pmatrix}
+1\\3\\1
+\end{pmatrix}.
+$$
+
+Vi kan nu lægge vektorerne sammen, beregne prikproduktet og finde krydsproduktet. Det kan vi gøre i Python.
+
+```{pyodide-python}
+import numpy as np
+
+# Definér to vektorer i R^3
+u = np.array([2, 1, 2])
+v = np.array([1, 3, 1])
+
+# Beregn sum, prikprodukt og krydsprodukt
+vector_sum = u + v
+dot_product = np.dot(u, v)
+cross_product = np.cross(u, v)
+
+print("u + v =", vector_sum)
+print("u · v =", dot_product)
+print("u x v =", cross_product)
+```
+Her lægger vi de to vektorer sammen, hvilket giver en ny vektor, hvor hver indgang er summen af de tilsvarende indgange i de oprindelige vektorer. Prikproduktet giver et tal, mens krydsproduktet giver en ny vektor, der står vinkelret på både $\vec$ og $\vec$.
+
+## Visualisering i 3D
+
+Det er ofte lettere at forstå vektorer i rummet, når man kan se dem. I det følgende plot tegner vi de to vektorer fra origo samt deres sum.
+
+```{pyodide-python}
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Definér vektorerne
+u = np.array([2, 1, 2])
+v = np.array([1, 3, 1])
+
+#addere og finder krydsprodukt
+w = u + v
+cp = np.cross(u, v)
+
+# Opretter et canvas til figuren
+fig = plt.figure(figsize=(7, 6))
+ax = fig.add_subplot(111, projection="3d")
+
+# Tegn vektorerne fra origo
+origin = np.zeros(3)
+ax.quiver(*origin, *cp, color="darkcyan", label="cp", arrow_length_ratio=0.12)
+ax.quiver(*origin, *u, color="blue", label="u", arrow_length_ratio=0.12)
+ax.quiver(*origin, *v, color="green", label="v", arrow_length_ratio=0.12)
+ax.quiver(*origin, *w, color="red", label="u + v", arrow_length_ratio=0.08)
+
+# Akser og udseende
+ax.set_xlim(-5, 5)
+ax.set_ylim(0, 5)
+ax.set_zlim(0, 4)
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.set_zlabel("z")
+ax.set_title("Vektoraddition i rummet")
+ax.legend()
+ax.set_box_aspect((1, 1, 1))
+plt.show()
+```
+
+Den røde vektor er summen af de to andre vektorer. Vi kan se, at vektoraddition i rummet fungerer på samme måde som i planen: Vi lægger de tilsvarende koordinater sammen. Den cyanfarvede vektor er krydsproduktet, som tydeligt står vinkelret på både den blå og den grønne vektor.
+
+## Prøv selv at ændre vektorerne
+
+En fordel ved Quarto-Pyodide er, at eleverne kan ændre koordinaterne i koden og straks se, hvordan det påvirker resultatet og den geometriske visualisering.
+
+Prøv eksempelvis at ændre vektorerne til
+
+$$
+\vec{u} =
+\begin{pmatrix}
+1\\2\\3
+\end{pmatrix},
+\qquad
+\vec{v} =
+\begin{pmatrix}
+3\\-1\\2
+\end{pmatrix}.
+$$
+
+Undersøg, hvordan summen ændrer sig. Prøv også at ændre vektorerne, så prikproduktet bliver nul. Hvad fortæller det om vinklen mellem vektorerne?
+
+Hvis man også gerne vil arbejde med animationer, er der nedenunder vist et eksempel på dette. Her har vi defineret en vektorfunktion som
+$$
+\mathbf{v}(t)=
+\begin{pmatrix}
+2\cos(t)\\
+2\sin(t)\\
+1
+\end{pmatrix}.
+$$
+
+```{pyodide-python}
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+# Definér vores t-værdier fra 0 til 2*pi 
+t_values = np.linspace(0, 2*np.pi, 40)
+
+# Laver en liste til at gemme alle frames
+frames_data = []
+
+# Opretter alle værdierne til frames
+for i, t in enumerate(t_values):
+
+    # udregner vector koordinaterne
+    x = 2 * np.cos(t)
+    y = 2 * np.sin(t)
+    z = 1
+    # Gemmer dataene til loop
+    frames_data.append({
+        'iter': i,
+        'vector': ([0, x], [0, y], [0, z]),
+        'point': ([x], [y], [z]),
+        'title': f"Rotation: {np.degrees(t):.1f} grader"
+    })
+
+
+# laver et canvas til en 3D-figur samt fortæller det er et 3d plot
+fig = plt.figure(figsize=(7, 6))
+ax = fig.add_subplot(111, projection='3d')
+
+# laver værdier til cirklen som vectorpilen drejer rundt i
+theta = np.linspace(0, 2*np.pi, 200)
+# Her tegner vi cirklen, som spidsen af vektoren bevæger sig langs.
+ax.plot(
+    2*np.cos(theta),
+    2*np.sin(theta),
+    np.ones_like(theta),
+    'b--',
+    alpha=0.5,
+    label='Path of vector tip'
+)
+
+# Sæt grænser på akserne for hvor grid er/ samt havd vi ser på
+ax.set_xlim(-2.5, 2.5)
+ax.set_ylim(-2.5, 2.5)
+ax.set_zlim(0, 2)
+
+#laver labels
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+
+# Laver tomme plots for animationen
+vector_plot, = ax.plot([], [], [], 'r-', linewidth=2, label='Vector')
+point_plot, = ax.plot([], [], [], 'ko', label='Vector tip')
+
+title = ax.set_title("")
+ax.legend()
+
+# Opdateringsfunktion til animationen
+def update(frame):
+    #trækker data ud til de enkelte plots så der er animation
+    data = frames_data[frame]
+
+    vector_plot.set_data(data['vector'][0], data['vector'][1])
+    vector_plot.set_3d_properties(data['vector'][2])
+
+    point_plot.set_data(data['point'][0], data['point'][1])
+    point_plot.set_3d_properties(data['point'][2])
+
+    title.set_text(data['title'])
+
+    return vector_plot, point_plot, title
+
+
+# Kører animationen
+ani = animation.FuncAnimation(
+    fig,
+    update,
+    frames=len(frames_data),
+    interval=100,
+    blit=False
+)
+
+plt.show()
+```

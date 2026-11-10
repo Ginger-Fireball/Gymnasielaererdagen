@@ -424,6 +424,11 @@ class InteractiveCell extends BaseCell {
             // Always check to see if the user adds new packages
             await mainPyodide.loadPackagesFromImports(code);
 
+            await mainPyodide.runPythonAsync(`
+                import matplotlib.pyplot as plt
+                plt.close('all')
+            `);
+
             // Process result
             const output = await mainPyodide.runPythonAsync(code);
 

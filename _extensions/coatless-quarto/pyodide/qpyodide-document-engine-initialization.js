@@ -55,7 +55,7 @@ globalThis.qpyodideInstance = await import(
     // Set the backend for matplotlib to be interactive.
     await mainPyodide.runPythonAsync(`
     import matplotlib
-    matplotlib.use("module://matplotlib_pyodide.html5_canvas_backend")
+    print("Matplotlib backend:", matplotlib.get_backend())
     from matplotlib import pyplot as plt
     `);
 
