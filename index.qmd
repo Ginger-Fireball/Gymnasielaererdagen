@@ -27,6 +27,7 @@ crossref:
 
 
 I dag vil jeg gerne vise, hvad Quarto-Pyodide kan, og hvorfor det kan være en stor fordel at bruge som et pædagogisk redskab i gymnasieundervisningen. Jeg vil derfor introducere nogle matematiske emner, hvor Quarto-Pyodide kan være med til at skabe en interaktiv og engagerende oplevelse for eleverne.
+
 ## Numeriske metoder
 
 :::{.callout-note title="Definition af en rod"}
